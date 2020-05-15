@@ -9,14 +9,15 @@ import re
 #  5 * X^0 - 6 * X^1 + 0 * X^2 - 5.6 * X^3 = 0
 #  5 + 4 * X^0 + X^2= X^2
 #  0*X^2-5*X^1-10*X^0=0
-#  X2-5X-10=0
+#  1X2-5X1-10=0
 
 normal_pat = r'(?P<sign>[+=\-])?\s*(?P<mult>[0-9.]+)\s*\*\s*[xX]\^(?P<pow>\d+)'
 # sign: +-= or nothing for first nb
 # mult: multiplier before an X
 # pow: degree/power of X
 
-advanced_pat = r'(?P<sign>[+=\-]?)\s*?((((?P<mult>[0-9.]*|[0-9]*)\s*[xX](?P<pow>[0-9]?)))|(?P<nbs>[0-9.]+))'
+# r'(?P<sign>[+=\-])?\s*?((((?P<mult>[0-9.]*|[0-9]*)\s*[xX](?P<pow>[0-9])?))|(?P<nbs>[0-9.]+))'
+advanced_pat = r'(?P<sign>[+=\-])?\s*?((((?P<mult>\d*.?\d*)\s*[xX](?P<pow>[0-9])?))|(?P<nbs>[0-9.]+))'
 # sign: +=- or nothing for first nb
 # mult: multiplier before an X
 
@@ -46,23 +47,34 @@ def calcul_normal_pattern(pat):
 				res[int(items.group('pow'))] -= float(items.group('mult'))
 			else:
 				res[int(items.group('pow'))] += float(items.group('mult'))
-	print(res)
 	return res
 
 
 def calcul_simplified_pattern(pat):
 	res = [0, 0, 0] # res[0] = mult X^0, res[1] = mult X^1, res[2] = mult X^2
-	for items in pat: #item = [(total, signe, multiple, puissance si rien puissance = 1 sinon = 2)X^2 ou X^1 ou (total, signe, nombre)X^0]
-		if items[0]:
-			if not items[1] or items[1] == '+':
-				res[int(items[3]) if items[3] else 1] += float(items[2]) if items[2] else 1
+	eq_sign = False
+	for items in pat:
+		if items.group('sign') == '=':
+			eq_sign = True
+		if eq_sign is False:
+			if items.group('nbs') is None and (items.group('sign') is None or items.group('sign') == '+'):
+				res[int(items.group('pow'))] += float(items.group('mult'))
+			elif items.group('nbs') and (items.group('sign') is None or items.group('sign') == '+'):
+				res[0] += float(items.group('nbs'))
+			elif items.group('nbs'):
+				res[0] -= float(items.group('nbs'))
 			else:
-				res[int(items[3]) if items[3] else 1] -= float(items[2]) if items[2] else 1
+				res[int(items.group('pow'))] -= float(items.group('mult'))
 		else:
-			if not items[-2] or items[-2] == '+':
-				res[0] += float(items[-1])
+			if items.group('sign') in '=+' and items.group('nbs') is None:
+				res[int(items.group('pow'))] -= float(items.group('mult'))
+			elif items.group('sign') in '=+' and items.group('nbs'):
+				res[0] -= float(items.group('nbs'))
+			elif items.group('nbs'):
+				res[0] += float(items.group('nbs'))
 			else:
-				res[0] -= float(items[-1])
+				res[int(items.group('pow'))] += float(items.group('mult'))
+	print(res)
 	return res
 
 
@@ -89,10 +101,17 @@ if __name__ == '__main__':
 				  'Le ^ peut être enlevé: 9X + 18 + 22x2 + 11x = -15465X\n'
 				  'Des nombres a virgules peuvent être utilisés : 9.3X + 18.65 + 22.542x2 + 1.1x = -15465.165413X')
 		else:
-			pattern = re.finditer(normal_pat, inp)
-			simplified_pattern = re.finditer(advanced_pat, inp)
+			# A AMELIORER
+			pattern = re.findall(normal_pat, inp)
+			simplified_pattern = re.findall(advanced_pat, inp)
 			wrong_pattern = re.findall(error_pat, inp)
 			if not wrong_pattern and (pattern or simplified_pattern):
+				if pattern:
+					pattern = re.finditer(normal_pat, inp)
+				else:
+					simplified_pattern = re.finditer(advanced_pat, inp)
+					# for x in simplified_pattern:
+					# 	print('sign: ', x.group('sign'), ' mult: ', x.group('mult'), ' pow: ', x.group('pow'), ' nb: ', x.group('nbs'))
 				break
 			else:
 				print("Votre équation n'a pas la forme correcte requise\n"
@@ -101,12 +120,12 @@ if __name__ == '__main__':
 		inc = calcul_normal_pattern(pattern)
 	else:
 		inc = calcul_simplified_pattern(simplified_pattern)
-	print('La forme simplifié est : {}{}{} = 0'
-		.format('{}X² '.format(inc[2]) if int(inc[2]) >= 0 else '- {}X² '.format(abs(inc[2])),
-		'+ {}X '.format(inc[1]) if int(inc[1]) >= 0 else '- {}X '.format(abs(inc[1])),
-		'+ {}'.format(inc[0]) if int(inc[0]) >= 0 else '- {}'.format(abs(inc[0]))))
-	solution(inc[1] * inc[1] - (inc[0] * inc[2] * 4), inc)
-	print('\u221A\u03051\u03056') #print une racine a supprimmer apres
+	# print('La forme simplifié est : {}{}{} = 0'
+	# 	.format('{}X² '.format(inc[2]) if int(inc[2]) >= 0 else '- {}X² '.format(abs(inc[2])),
+	# 	'+ {}X '.format(inc[1]) if int(inc[1]) >= 0 else '- {}X '.format(abs(inc[1])),
+	# 	'+ {}'.format(inc[0]) if int(inc[0]) >= 0 else '- {}'.format(abs(inc[0]))))
+	# solution(inc[1] * inc[1] - (inc[0] * inc[2] * 4), inc)
+	# print('\u221A\u03051\u03056') #print une racine a supprimmer apres
 
 #9.3X + 18.65 + 22.542X2 + 1.1X = -15465.165413X
 #0.0012067496547532425 and 685.597471850292
