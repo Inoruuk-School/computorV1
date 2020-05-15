@@ -25,17 +25,33 @@ error_pat = r'([a-wyzA-WYZ]|[\d]*\.[\d]+\.[\d]+|[xX]\^[0-9]\.[0-9]+|[xX]\^[0-9]{
 
 
 def calcul_normal_pattern(pat):
-	res = [0, 0, 0]  # res[0] = nombres sans X, res[1] = multiple de X, res[2] = multiple X^2
+	"""
+	This function is used to calculate the multiplier of each degree of power of X
+	:param pat: iterator giving each time a sign, a multiplier and a degree
+	:return:	A list containing the calculated multiplier for each degree, the first item being degree 0,
+				second degree 1 and third degree 2
+	"""
+	res = [0, 0, 0]  # res[0] = mult X^0, res[1] = mult X^1, res[2] = mult X^2
+	eq_sign = False
 	for items in pat:
-		if not items[0] or items[0] == '+':
-			res[int(items[-1])] += float(items[1])
+		if items.group('sign') == '=':
+			eq_sign = True
+		if eq_sign is False:
+			if items.group('sign') is None or items.group('sign') == '+':
+				res[int(items.group('pow'))] += float(items.group('mult'))
+			else:
+				res[int(items.group('pow'))] -= float(items.group('mult'))
 		else:
-			res[int(items[-1])] -= float(items[1])
+			if items.group('sign') in '=+':
+				res[int(items.group('pow'))] -= float(items.group('mult'))
+			else:
+				res[int(items.group('pow'))] += float(items.group('mult'))
+	print(res)
 	return res
 
 
 def calcul_simplified_pattern(pat):
-	res = [0, 0, 0] #res[0] = nombres sans X, res[1] = multiple de X, res[2] = multiple X^2
+	res = [0, 0, 0] # res[0] = mult X^0, res[1] = mult X^1, res[2] = mult X^2
 	for items in pat: #item = [(total, signe, multiple, puissance si rien puissance = 1 sinon = 2)X^2 ou X^1 ou (total, signe, nombre)X^0]
 		if items[0]:
 			if not items[1] or items[1] == '+':
@@ -77,22 +93,20 @@ if __name__ == '__main__':
 			simplified_pattern = re.finditer(advanced_pat, inp)
 			wrong_pattern = re.findall(error_pat, inp)
 			if not wrong_pattern and (pattern or simplified_pattern):
-				for x in simplified_pattern:
-					print(x)
 				break
 			else:
 				print("Votre équation n'a pas la forme correcte requise\n"
 					  "-h pour avoir les possibilités de forme d'écriture de l'équation")
-	# if pattern:
-	# 	inc = calcul_normal_pattern(pattern)
-	# else:
-	# 	inc = calcul_simplified_pattern(simplified_pattern)
-	# print('La forme simplifié est : {}{}{} = 0'
-	# 	.format('{}X² '.format(inc[2]) if int(inc[2]) >= 0 else '- {}X² '.format(abs(inc[2])),
-	# 	'+ {}X '.format(inc[1]) if int(inc[1]) >= 0 else '- {}X '.format(abs(inc[1])),
-	# 	'+ {}'.format(inc[0]) if int(inc[0]) >= 0 else '- {}'.format(abs(inc[0]))))
-	# solution(inc[1] * inc[1] - (inc[0] * inc[2] * 4), inc)
-	# print('\u221A\u03051\u03056') #print une racine a supprimmer apres
+	if pattern:
+		inc = calcul_normal_pattern(pattern)
+	else:
+		inc = calcul_simplified_pattern(simplified_pattern)
+	print('La forme simplifié est : {}{}{} = 0'
+		.format('{}X² '.format(inc[2]) if int(inc[2]) >= 0 else '- {}X² '.format(abs(inc[2])),
+		'+ {}X '.format(inc[1]) if int(inc[1]) >= 0 else '- {}X '.format(abs(inc[1])),
+		'+ {}'.format(inc[0]) if int(inc[0]) >= 0 else '- {}'.format(abs(inc[0]))))
+	solution(inc[1] * inc[1] - (inc[0] * inc[2] * 4), inc)
+	print('\u221A\u03051\u03056') #print une racine a supprimmer apres
 
 #9.3X + 18.65 + 22.542X2 + 1.1X = -15465.165413X
 #0.0012067496547532425 and 685.597471850292
