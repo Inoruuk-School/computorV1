@@ -12,9 +12,13 @@ import re
 #  X2-5X-10=0
 
 normal_pat = r'(?P<sign>[+=\-])?\s*(?P<mult>[0-9.]+)\s*\*\s*[xX]\^(?P<pow>\d+)'
-# sign : +-= or nothing, mult : number before *, pow :degree/power of X
+# sign: +-= or nothing for first nb
+# mult: multiplier before an X
+# pow: degree/power of X
 
-advanced_pat = r'(?P<sign>[+=\-]?)(((\s*?(?P<mult>[0-9.]*|[0-9]*)\s*[xX](?P<pow>[0-9]?)))|((?P<sign2>[+=\-]?)\s*?(?P<nbs>[0-9.]+)))'
+advanced_pat = r'(?P<sign>[+=\-]?)\s*?((((?P<mult>[0-9.]*|[0-9]*)\s*[xX](?P<pow>[0-9]?)))|(?P<nbs>[0-9.]+))'
+# sign: +=- or nothing for first nb
+# mult: multiplier before an X
 
 error_pat = r'([a-wyzA-WYZ]|[\d]*\.[\d]+\.[\d]+|[xX]\^[0-9]\.[0-9]+|[xX]\^[0-9]{2,}|[xX]\^[3-9]|[xX]\^-[0-9])'
 # find letters, bad numbers(1.1.1...), bad powaaa X^3+ X^-1
@@ -73,6 +77,8 @@ if __name__ == '__main__':
 			simplified_pattern = re.finditer(advanced_pat, inp)
 			wrong_pattern = re.findall(error_pat, inp)
 			if not wrong_pattern and (pattern or simplified_pattern):
+				for x in simplified_pattern:
+					print(x)
 				break
 			else:
 				print("Votre équation n'a pas la forme correcte requise\n"
