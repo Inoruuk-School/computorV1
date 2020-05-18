@@ -2,6 +2,7 @@ import re
 
 # Examples:
 #  5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0
+#  5 * X^0 + 4 * X^1 - 9.3 * X^2 = -1 * X^0
 #  4 * X^0 + 4 * X^1 - 9.3 * X^2 = 0
 #  5 * X^0 + 4 * X^1 = 4 * X^0
 #  1 * X^0 + 4 * X^1 = 0
@@ -10,18 +11,22 @@ import re
 #  5 + 4 * X^0 + X^2= X^2
 #  0*X^2-5*X^1-10*X^0=0
 #  1X2-5X1-10=0
+#  1X2-5X1-10= -5X2
 
-normal_pat = r'(?P<sign>[+=\-])?\s*(?P<mult>[0-9.]+)\s*\*\s*[xX]\^(?P<pow>\d+)'
+normal_pat = r'(?P<eq>=)?\s*(?P<sign>[+\-])?\s*(?P<mult>[0-9.]+)\s*\*\s*[xX]\^(?P<pow>\d+)'
+# eq: if '=' is found
 # sign: +-= or nothing for first nb
 # mult: multiplier before an X
 # pow: degree/power of X
 
-# r'(?P<sign>[+=\-])?\s*?((((?P<mult>[0-9.]*|[0-9]*)\s*[xX](?P<pow>[0-9])?))|(?P<nbs>[0-9.]+))'
-advanced_pat = r'(?P<sign>[+=\-])?\s*?((((?P<mult>\d*.?\d*)\s*[xX](?P<pow>[0-9])?))|(?P<nbs>[0-9.]+))'
+advanced_pat = r'(?P<eq>=)?\s*(?P<sign>[+\-])?\s*?((((?P<mult>\d*.?\d*)\s*[xX](?P<pow>[0-9])?))|(?P<nbs>[0-9.]+))'
+# eq: if '=' is found
 # sign: +=- or nothing for first nb
 # mult: multiplier before an X
+# pow: degree/power of X
+# nbs: same as mult but with X^0, marked as simple number
 
-error_pat = r'([a-wyzA-WYZ]|[\d]*\.[\d]+\.[\d]+|[xX]\^[0-9]\.[0-9]+|[xX]\^[0-9]{2,}|[xX]\^[3-9]|[xX]\^-[0-9])'
+error_pat = r'([a-wyzA-WYZ]|[\d]*\.[\d]+\.[\d]+|[xX]\^?[0-9]\.[0-9]+|[xX]\^[0-9]{2,}|[xX]\^?-?[3-9]|[xX]\^-[0-9])'
 # find letters, bad numbers(1.1.1...), bad powaaa X^3+ X^-1
 
 
@@ -35,7 +40,7 @@ def calcul_normal_pattern(pat):
 	res = [0, 0, 0]  # res[0] = mult X^0, res[1] = mult X^1, res[2] = mult X^2
 	eq_sign = False
 	for items in pat:
-		if items.group('sign') == '=':
+		if items.group('eq'):
 			eq_sign = True
 		if eq_sign is False:
 			if items.group('sign') is None or items.group('sign') == '+':
@@ -47,6 +52,7 @@ def calcul_normal_pattern(pat):
 				res[int(items.group('pow'))] -= float(items.group('mult'))
 			else:
 				res[int(items.group('pow'))] += float(items.group('mult'))
+	print(res)
 	return res
 
 
@@ -54,7 +60,7 @@ def calcul_simplified_pattern(pat):
 	res = [0, 0, 0] # res[0] = mult X^0, res[1] = mult X^1, res[2] = mult X^2
 	eq_sign = False
 	for items in pat:
-		if items.group('sign') == '=':
+		if items.group('eq'):
 			eq_sign = True
 		if eq_sign is False:
 			if items.group('nbs') is None and (items.group('sign') is None or items.group('sign') == '+'):
@@ -110,8 +116,6 @@ if __name__ == '__main__':
 					pattern = re.finditer(normal_pat, inp)
 				else:
 					simplified_pattern = re.finditer(advanced_pat, inp)
-					# for x in simplified_pattern:
-					# 	print('sign: ', x.group('sign'), ' mult: ', x.group('mult'), ' pow: ', x.group('pow'), ' nb: ', x.group('nbs'))
 				break
 			else:
 				print("Votre équation n'a pas la forme correcte requise\n"
