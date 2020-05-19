@@ -46,21 +46,16 @@ def base_pattern_calcul(pat):
 				res[int(items.group('pow'))] -= float(items.group('mult'))
 			else:
 				res[int(items.group('pow'))] += float(items.group('mult'))
-	return res
+	return {'a': res[2], 'b': res[1], 'c': res[0]}
 
 
-def solution(disc, inc):
-	print('Le discriminant est :', disc, inc)
-	if disc == 0 and inc[2] != 0:
-		print('Il existe une solution qui est : {}'.format((-(inc[1]/(2 * inc[2])))))
-	elif disc > 0 and inc[2] != 0:
-		print('Il existe deux solutions qui sont : {} and {}'.format((-inc[1] - disc ** 0.5) / (2 * inc[2]), (-inc[1] + disc ** 0.5) / (2 * inc[2])))
-	elif inc[2] == 0 and inc[1] != 0:
-		print('The solution is')
-	elif inc[1] == 0:
-		print('titi')
-	else:
-		print('Il n\'existe aucune solution a cette equation')
+def solution(expo: dict):
+	a, b, c, disc = expo['a'], expo['b'], expo['c'], expo['b'] * expo['b'] - (expo['c'] * expo['a'] * 4)
+	print('Le discriminant est :', disc)
+	if disc < 0:
+		print("Il n'existe pas de racines réelles, donc aucune solution")
+	elif disc > 0:
+		print("Il existe deux solutions: qui sont:\n{}\n{}".format(((-b-disc)/(2*a)), ((-b+disc)/(2*a))))
 
 
 if __name__ == '__main__':
@@ -79,12 +74,12 @@ if __name__ == '__main__':
 			else:
 				print("Votre équation n'a pas la forme correcte requise\n"
 					  "-h pour avoir les possibilités de forme d'écriture de l'équation")
-	inc = base_pattern_calcul(pattern)
+	sol = base_pattern_calcul(pattern)
 	print('La forme simplifié est : {}{}{} = 0'
-		.format('{}X² '.format(inc[2]) if int(inc[2]) >= 0 else '- {}X² '.format(abs(inc[2])),
-		'+ {}X '.format(inc[1]) if int(inc[1]) >= 0 else '- {}X '.format(abs(inc[1])),
-		'+ {}'.format(inc[0]) if int(inc[0]) >= 0 else '- {}'.format(abs(inc[0]))))
-	solution(inc[1] * inc[1] - (inc[0] * inc[2] * 4), inc)
+		.format('{}X² '.format(sol['a']) if int(sol['a']) >= 0 else '- {}X² '.format(abs(sol['a'])),
+		'+ {}X '.format(sol['b']) if int(sol['b']) >= 0 else '- {}X '.format(abs(sol['b'])),
+		'+ {}'.format(sol['c']) if int(sol['c']) >= 0 else '- {}'.format(abs(sol['c']))))
+	solution(sol)
 	print('\u221A\u03051\u03056') #print une racine a supprimmer apres
 
 # 9.3X1 + 18.65X0 + 22.542X2 + 1.1X1 = -15465.165413X1
