@@ -55,7 +55,11 @@ def solution(expo: dict):
 	if disc < 0:
 		print("Il n'existe pas de racines réelles, donc aucune solution")
 	elif disc > 0:
-		print("Il existe deux solutions: qui sont:\n{}\n{}".format(((-b-disc)/(2*a)), ((-b+disc)/(2*a))))
+		pos, neg = (-b + disc ** 0.5) / (2 * a), (-b - disc ** 0.5) / (2 * a)
+		print("Il existe deux solutions: qui sont:\n"
+			  "\t1: {}\n\t2: {}".format(pos, neg))
+	else:
+		print("Il existe une solution:\n\t{}".format(-b / (2 * a)))
 
 
 if __name__ == '__main__':
@@ -80,7 +84,6 @@ if __name__ == '__main__':
 		'+ {}X '.format(sol['b']) if int(sol['b']) >= 0 else '- {}X '.format(abs(sol['b'])),
 		'+ {}'.format(sol['c']) if int(sol['c']) >= 0 else '- {}'.format(abs(sol['c']))))
 	solution(sol)
-	print('\u221A\u03051\u03056') #print une racine a supprimmer apres
 
 # 9.3X1 + 18.65X0 + 22.542X2 + 1.1X1 = -15465.165413X1
 # -686.5201955022231 and -0.001205127712004599
