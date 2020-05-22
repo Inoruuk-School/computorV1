@@ -14,6 +14,11 @@ from errors import InputEqError
 #  1X2-5X1-10=0
 #  1X2-5X1-10= -5X2
 
+helper = 'La forme de base est : 1 + X^0 2 + X^1 3 + X^2 = 0 X^0\n' \
+		 'Des X minuscules peuvent être utilisés : 1 + x^0 2 + x^1 3 + x^2 = 0 x^0\n' \
+		 'Le ^ peut être enlevé: 9X1 + 18x0 + 22x2 + 11x1 = -15465X0\n' \
+		 'Des nombres a virgules peuvent être utilisés : 9.3X + 18.65 + 22.542x2 + 1.1x = -15465.165413X'
+
 base_pat = r'(?P<eq>=)?\s*?(?P<sign>[+\-])?\s*?(?P<mult>[0-9.]+)?\s*?\*?\s*?[xX]\^?(?P<pow>\d+)'
 # eq: if '=' is found
 # sign: +-= or nothing for first nb
@@ -25,16 +30,16 @@ error_pat = r'([a-wyzA-WYZ]|[\d]*\.[\d]+\.[\d]+|[xX]\^?[0-9]\.[0-9]+|[xX]\^[0-9]
 # find letters, bad numbers(1.1.1...), bad powaaa X^3+ X^-1
 
 
-def base_pattern_calcul(pat):
+def multiplier_calculation(iterator):
 	"""
 	This function is used to calculate the multiplier of each degree of power of X
-	:param pat: iterator giving each time a sign, a multiplier and a degree
+	:param iterator: iterator giving each time a sign, a multiplier and a degree
 	:return:	A list containing the calculated multiplier for each degree, the first item being degree 0,
 				second degree 1 and third degree 2
 	"""
 	res = [0, 0, 0]  # res[0] = mult X^0, res[1] = mult X^1, res[2] = mult X^2
 	eq_sign = False
-	for items in pat:
+	for items in iterator:
 		if items.group('eq'):
 			eq_sign = True
 		if eq_sign is False:
@@ -79,7 +84,7 @@ def solution(expo: dict):
 # 			else:
 # 				print("Votre équation n'a pas la forme correcte requise\n"
 # 					  "-h pour avoir les possibilités de forme d'écriture de l'équation")
-# 	sol = base_pattern_calcul(pattern)
+# 	sol = multiplier_calculation(pattern)
 # 	print('La forme simplifié est : {}{}{} = 0'
 # 		.format('{}X² '.format(sol['a']) if int(sol['a']) >= 0 else '- {}X² '.format(abs(sol['a'])),
 # 		'+ {}X '.format(sol['b']) if int(sol['b']) >= 0 else '- {}X '.format(abs(sol['b'])),
@@ -90,20 +95,25 @@ def solution(expo: dict):
 # -686.5201955022231 and -0.001205127712004599
 # https://www.mathpapa.com/quadratic-formula/
 #
+
 if __name__ == '__main__':
 	while True:
 		try:
 			inp = input("Donnez moi une équation du second degré!\n")
 			if inp == '-h':
-				print('La forme de base est : 1 + X^0 2 + X^1 3 + X^2 = 0 X^0\n'
-					  'Des X minuscules peuvent être utilisés : 1 + x^0 2 + x^1 3 + x^2 = 0 x^0\n'
-					  'Le ^ peut être enlevé: 9X1 + 18x0 + 22x2 + 11x1 = -15465X0\n'
-					  'Des nombres a virgules peuvent être utilisés : 9.3X + 18.65 + 22.542x2 + 1.1x = -15465.165413X')
+				print(helper)
 			wrong_pattern = re.findall(error_pat, inp)
 			if wrong_pattern:
 				raise InputEqError(inp, wrong_pattern)
 			else:
-				pattern = re.finditer(base_pat, inp)
+				mult = multiplier_calculation(re.finditer(base_pat, inp))
 				break
 		except InputEqError as err:
 			print(err)
+	if mult['a'] != 0:
+		solution(mult)
+	elif mult['a'] == 0 and mult['b'] != 0:
+		print("La solution a l'équation {}X = {} est {}".format(mult['b'], mult['c'],  mult['c'] / mult['b']))
+	else:
+		# JSPAS
+		print("Il n'y a pas de solution a cette équation")
