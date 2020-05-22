@@ -1,4 +1,5 @@
 import re
+from errors import InputEqError
 
 # Examples:
 #  5 * X^0 + 4 * X^1 - 9.3 * X^2 = 1 * X^0
@@ -6,7 +7,7 @@ import re
 #  4 * X^0 + 4 * X^1 - 9.3 * X^2 = 0
 #  5 * X^0 + 4 * X^1 = 4 * X^0
 #  1 * X^0 + 4 * X^1 = 0
-#  8 * X^0 - 6 * X^1 + 0 * X^2 - 5.6 * X^3 = 3 * X^0
+#  abc * X^0 - 6 * X^1 + 0 * X^2 - 5.6 * X^3 = 3 * X^50
 #  5 * X^0 - 6 * X^1 + 0 * X^2 - 5.6 * X^3 = 0
 #  5 + 4 * X^0 + X^2= X^2
 #  0*X^2-5*X^1-10*X^0=0
@@ -62,29 +63,47 @@ def solution(expo: dict):
 		print("Il existe une solution:\n\t{}".format(-b / (2 * a)))
 
 
-if __name__ == '__main__':
-	while 1:
-		inp = input("Donnez moi une équation du second degré!\n")
-		if inp == '-h':
-			print('La forme de base est : 1 + X^0 2 + X^1 3 + X^2 = 0 X^0\n'
-				  'Des X minuscules peuvent être utilisés : 1 + x^0 2 + x^1 3 + x^2 = 0 x^0\n'
-				  'Le ^ peut être enlevé: 9X1 + 18x0 + 22x2 + 11x1 = -15465X0\n'
-				  'Des nombres a virgules peuvent être utilisés : 9.3X + 18.65 + 22.542x2 + 1.1x = -15465.165413X')
-		else:
-			pattern = re.finditer(base_pat, inp)
-			wrong_pattern = re.findall(error_pat, inp)
-			if not wrong_pattern and pattern:
-				break
-			else:
-				print("Votre équation n'a pas la forme correcte requise\n"
-					  "-h pour avoir les possibilités de forme d'écriture de l'équation")
-	sol = base_pattern_calcul(pattern)
-	print('La forme simplifié est : {}{}{} = 0'
-		.format('{}X² '.format(sol['a']) if int(sol['a']) >= 0 else '- {}X² '.format(abs(sol['a'])),
-		'+ {}X '.format(sol['b']) if int(sol['b']) >= 0 else '- {}X '.format(abs(sol['b'])),
-		'+ {}'.format(sol['c']) if int(sol['c']) >= 0 else '- {}'.format(abs(sol['c']))))
-	solution(sol)
-
+# if __name__ == '__main__':
+# 	while 1:
+# 		inp = input("Donnez moi une équation du second degré!\n")
+# 		if inp == '-h':
+# 			print('La forme de base est : 1 + X^0 2 + X^1 3 + X^2 = 0 X^0\n'
+# 				  'Des X minuscules peuvent être utilisés : 1 + x^0 2 + x^1 3 + x^2 = 0 x^0\n'
+# 				  'Le ^ peut être enlevé: 9X1 + 18x0 + 22x2 + 11x1 = -15465X0\n'
+# 				  'Des nombres a virgules peuvent être utilisés : 9.3X + 18.65 + 22.542x2 + 1.1x = -15465.165413X')
+# 		else:
+# 			wrong_pattern = re.findall(error_pat, inp)
+# 			if not wrong_pattern:
+# 				pattern = re.finditer(base_pat, inp)
+# 				break
+# 			else:
+# 				print("Votre équation n'a pas la forme correcte requise\n"
+# 					  "-h pour avoir les possibilités de forme d'écriture de l'équation")
+# 	sol = base_pattern_calcul(pattern)
+# 	print('La forme simplifié est : {}{}{} = 0'
+# 		.format('{}X² '.format(sol['a']) if int(sol['a']) >= 0 else '- {}X² '.format(abs(sol['a'])),
+# 		'+ {}X '.format(sol['b']) if int(sol['b']) >= 0 else '- {}X '.format(abs(sol['b'])),
+# 		'+ {}'.format(sol['c']) if int(sol['c']) >= 0 else '- {}'.format(abs(sol['c']))))
+# 	solution(sol)
+#
 # 9.3X1 + 18.65X0 + 22.542X2 + 1.1X1 = -15465.165413X1
 # -686.5201955022231 and -0.001205127712004599
 # https://www.mathpapa.com/quadratic-formula/
+#
+if __name__ == '__main__':
+	while True:
+		try:
+			inp = input("Donnez moi une équation du second degré!\n")
+			if inp == '-h':
+				print('La forme de base est : 1 + X^0 2 + X^1 3 + X^2 = 0 X^0\n'
+					  'Des X minuscules peuvent être utilisés : 1 + x^0 2 + x^1 3 + x^2 = 0 x^0\n'
+					  'Le ^ peut être enlevé: 9X1 + 18x0 + 22x2 + 11x1 = -15465X0\n'
+					  'Des nombres a virgules peuvent être utilisés : 9.3X + 18.65 + 22.542x2 + 1.1x = -15465.165413X')
+			wrong_pattern = re.findall(error_pat, inp)
+			if wrong_pattern:
+				raise InputEqError(inp, wrong_pattern)
+			else:
+				pattern = re.finditer(base_pat, inp)
+				break
+		except InputEqError as err:
+			print(err)
